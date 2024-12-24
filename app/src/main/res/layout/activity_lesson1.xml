@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="enrolled.Lesson1"
+    android:orientation="vertical"
+    android:background="@color/pink">
+
+    <!-- Toolbar at the top -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="Back"
+        android:gravity="center"
+        app:titleTextColor="@color/white"
+        android:layout_marginTop="20dp"
+        app:titleTextAppearance="@style/ToolbarTitleBold"
+        app:navigationIcon="@drawable/baseline_arrow_back_24"/>
+
+    <TextView
+        android:id="@+id/courseTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Understanding Self-Confidence"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="25dp"/>
+
+    <TextView
+        android:id="@+id/courseLesson"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Definition and Importance of Self-Confidence"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:textColor="@color/white"
+        android:textStyle="italic"
+        android:textSize="18dp"/>
+
+    <ImageView
+        android:id="@+id/LessonPicture"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:src="@drawable/confidence"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        />
+
+    <TextView
+    android:id="@+id/LessonTitle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Definition"
+    android:layout_marginTop="20dp"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
+    android:textColor="@color/white"
+    android:textStyle="bold"
+    android:textSize="23dp"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="20dp"
+        android:layout_margin="20dp"
+        android:elevation="20dp">
+
+        <TextView
+            android:layout_margin="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/lessons1definition"
+            android:textSize="16dp"/>
+
+
+    </androidx.cardview.widget.CardView>
+
+
+</LinearLayout>
