@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/pink">
+
+    <!-- Course Title -->
+    <TextView
+        android:id="@+id/courseTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Course Title"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"/>
+
+    <!-- Module Title -->
+    <TextView
+        android:id="@+id/moduleTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Module Title"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="16dp"/>
+
+    <!-- Lesson Title -->
+    <TextView
+        android:id="@+id/lessonTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lesson Title"
+        android:textSize="20sp"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="16dp"/>
+
+    <!-- Lesson Content -->
+    <TextView
+        android:id="@+id/lessonContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lesson Content"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>
