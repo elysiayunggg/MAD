@@ -101,9 +101,13 @@ public class MainActivity2 extends AppCompatActivity {
 
                 // Set isCourseStarted to true to indicate that the course has been enrolled
                 isCourseStarted = true;
-
                 // Optionally disable the button after enrollment to prevent multiple clicks
                // enrollButton.setEnabled(false);
+
+            } else {
+                // When "Start Lesson" is clicked, navigate to LessonActivity
+                Intent intent = new Intent(MainActivity2.this, LessonActivity.class);
+                startActivity(intent);
             }
         });
     }
