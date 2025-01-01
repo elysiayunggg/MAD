@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Button;
 
 import androidx.annotation.Nullable;
@@ -16,6 +17,8 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class MyCourseActivity extends AppCompatActivity {
 
@@ -26,6 +29,7 @@ public class MyCourseActivity extends AppCompatActivity {
     private Button addCourseButton;
 
     private static final String COURSE_LIST_KEY = "courseList";
+    private static final String LESSON_MAP_KEY = "lessonMap";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +43,7 @@ public class MyCourseActivity extends AppCompatActivity {
         // Initialize SharedPreferences
         sharedPreferences = getSharedPreferences("CourseData", MODE_PRIVATE);
 
-        // Load courses from SharedPreferences
+        // Load courses and lesson maps from SharedPreferences
         courseList = loadCourses();
 
         // Initialize adapter with delete functionality
@@ -62,22 +66,44 @@ public class MyCourseActivity extends AppCompatActivity {
         });
     }
 
-    // Load courses from SharedPreferences
+    // Load courses and their lesson maps from SharedPreferences
     private ArrayList<Course> loadCourses() {
         Gson gson = new Gson();
-        String json = sharedPreferences.getString(COURSE_LIST_KEY, "");
-        if (json.isEmpty()) {
-            return new ArrayList<>();
+
+        // Load course list
+        String courseListJson = sharedPreferences.getString(COURSE_LIST_KEY, "");
+        ArrayList<Course> courses = new ArrayList<>();
+        if (!courseListJson.isEmpty()) {
+            Type courseListType = new TypeToken<ArrayList<Course>>() {}.getType();
+            courses = gson.fromJson(courseListJson, courseListType);
         }
-        Type type = new TypeToken<ArrayList<Course>>() {}.getType();
-        return gson.fromJson(json, type);
+
+        // Load lesson maps for each course
+        for (Course course : courses) {
+            String lessonMapJson = sharedPreferences.getString(LESSON_MAP_KEY + "_" + course.getTitle(), "");
+            if (!lessonMapJson.isEmpty()) {
+                Type lessonMapType = new TypeToken<HashMap<String, List<String>>>() {}.getType();
+                HashMap<String, List<String>> lessonMap = gson.fromJson(lessonMapJson, lessonMapType);
+                course.setLessonsByModule(lessonMap);
+            }
+        }
+
+        return courses;
     }
 
-    // Save courses to SharedPreferences
+    // Save courses and their lesson maps to SharedPreferences
     private void saveCourses() {
         Gson gson = new Gson();
-        String json = gson.toJson(courseList);
-        sharedPreferences.edit().putString(COURSE_LIST_KEY, json).apply();
+
+        // Save course list
+        String courseListJson = gson.toJson(courseList);
+        sharedPreferences.edit().putString(COURSE_LIST_KEY, courseListJson).apply();
+
+        // Save lesson maps for each course
+        for (Course course : courseList) {
+            String lessonMapJson = gson.toJson(course.getLessonsByModule());
+            sharedPreferences.edit().putString(LESSON_MAP_KEY + "_" + course.getTitle(), lessonMapJson).apply();
+        }
     }
 
     // Handle the result returned from AddCourseActivity
@@ -93,6 +119,13 @@ public class MyCourseActivity extends AppCompatActivity {
             ArrayList<String> modules = data.getStringArrayListExtra("modules");
 
             Course newCourse = new Course(courseTitle, courseDescription, lessonsCount, imageUrl, modules);
+
+            // Initialize empty lesson map for the new course
+            newCourse.setLessonsByModule(new HashMap<>());
+            for (String module : modules) {
+                newCourse.getLessonsByModule().put(module, new ArrayList<>());
+            }
+
             courseList.add(newCourse);
             saveCourses();
             courseAdapter.notifyDataSetChanged();
@@ -106,5 +139,14 @@ public class MyCourseActivity extends AppCompatActivity {
         courseList.clear();
         courseList.addAll(loadCourses());
         courseAdapter.notifyDataSetChanged();
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            // Finish the current activity to return to the previous one
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

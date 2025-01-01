@@ -2,7 +2,7 @@
 <resources>
     <style name="ToolbarTitleBold" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
         <item name="android:textStyle">bold</item>
-        <item name="android:textSize">35sp</item>
+        <item name="android:textSize">25dp</item>
     </style>
 
     <style name="WhiteRadioButton" parent="Widget.AppCompat.CompoundButton.RadioButton">

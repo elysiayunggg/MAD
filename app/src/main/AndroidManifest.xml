@@ -17,9 +17,11 @@
         android:theme="@style/Theme.Mentor"
         tools:targetApi="31">
         <activity
-            android:name=".CourseInfoActivity"
+            android:name=".CreateLessonActivity"
             android:exported="false" />
-        <!-- Set MyCourseActivity as the launcher activity -->
+        <activity
+            android:name=".CourseInfoActivity"
+            android:exported="false" /> <!-- Set MyCourseActivity as the launcher activity -->
         <activity
             android:name=".MyCourseActivity"
             android:exported="true">
