@@ -64,6 +64,8 @@ public class MyCourseActivity extends AppCompatActivity {
             Intent intent = new Intent(MyCourseActivity.this, AddCourseActivity.class);
             startActivityForResult(intent, 1); // Request code 1 to handle the result
         });
+
+        saveCourses(); // Ensure updated courses are saved
     }
 
     // Load courses and their lesson maps from SharedPreferences

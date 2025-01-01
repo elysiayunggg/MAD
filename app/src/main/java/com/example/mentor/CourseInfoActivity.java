@@ -1,7 +1,6 @@
 package com.example.mentor;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,10 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -92,10 +88,9 @@ public class CourseInfoActivity extends AppCompatActivity {
         // Set up "Create Lessons" button
         createLessonsButton.setOnClickListener(v -> {
             if (selectedModuleName != null) {
-                // Navigate to CreateLessonActivity with the selected module name
                 Intent createLessonIntent = new Intent(CourseInfoActivity.this, CreateLessonActivity.class);
                 createLessonIntent.putExtra("moduleName", selectedModuleName);
-                startActivityForResult(createLessonIntent, 1); // Use startActivityForResult
+                startActivityForResult(createLessonIntent, 1);
             } else {
                 Toast.makeText(this, "Please select a module first", Toast.LENGTH_SHORT).show();
             }
@@ -129,52 +124,53 @@ public class CourseInfoActivity extends AppCompatActivity {
         if (modules != null) {
             for (String module : modules) {
                 moduleList.add(module);
-
-                // Load lessons from SharedPreferences or existing course data
-                List<String> lessons = loadLessonsForModule(module);
-                lessonMap.put(module, lessons != null ? lessons : new ArrayList<>());
+                lessonMap.put(module, new ArrayList<>()); // Start with no lessons
             }
         }
-    }
-
-    private List<String> loadLessonsForModule(String moduleName) {
-        SharedPreferences sharedPreferences = getSharedPreferences("CourseData", MODE_PRIVATE);
-        Gson gson = new Gson();
-        String lessonMapJson = sharedPreferences.getString("lessonMap_" + moduleName, "");
-        if (!lessonMapJson.isEmpty()) {
-            Type type = new TypeToken<List<String>>() {}.getType();
-            return gson.fromJson(lessonMapJson, type);
-        }
-        return null;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 2 && resultCode == RESULT_OK) { // Handle edit course info
-            // Update course details
-            String title = data.getStringExtra("courseTitle");
-            String description = data.getStringExtra("courseDescription");
-            int lessonsCount = data.getIntExtra("lessonsCount", 0);
-            String imageUrl = data.getStringExtra("imageUrl");
-            ArrayList<String> modules = data.getStringArrayListExtra("modules");
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
+            // Retrieve the lesson data
+            String lessonTitle = data.getStringExtra("lessonTitle");
+            String lessonContent = data.getStringExtra("lessonContent");
 
-            titleTextView.setText(title);
-            descriptionTextView.setText(description);
-            lessonsTextView.setText(String.format("Lessons: %d", lessonsCount));
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                Glide.with(this).load(imageUrl).into(courseImageView);
-            } else {
-                courseImageView.setImageResource(R.drawable.error);
+            // Ensure a module is selected and the lesson data is valid
+            if (selectedModuleName != null && lessonTitle != null) {
+                // Update the lessonMap (local for ExpandableListView)
+                List<String> lessons = lessonMap.get(selectedModuleName);
+                if (lessons == null) {
+                    lessons = new ArrayList<>();
+                    lessonMap.put(selectedModuleName, lessons);
+                }
+                lessons.add(lessonTitle);
+
+                // Retrieve the current course object (update lessonsByModule)
+                Course course = retrieveCurrentCourse();
+                if (course != null) {
+                    course.addLesson(selectedModuleName, lessonTitle); // Update course data
+                }
+
+                // Notify the ExpandableListAdapter of data changes
+                ((CustomExpandableListAdapter) expandableListAdapter).notifyDataSetChanged();
             }
-
-            // Update module data
-            initializeModulesAndLessons(modules);
-            ((CustomExpandableListAdapter) expandableListAdapter).notifyDataSetChanged();
         }
-
     }
+
+    private Course retrieveCurrentCourse() {
+        // Assuming you have a way to identify the course being edited (e.g., a title or ID)
+        String courseTitle = titleTextView.getText().toString(); // Ensure the title matches exactly
+        for (Course course : CourseRepository.getCourses()) {
+            if (course.getTitle().equals(courseTitle)) {
+                return course;
+            }
+        }
+        return null; // If no matching course is found
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

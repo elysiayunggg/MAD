@@ -142,161 +142,20 @@
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="20dp"
             android:layout_marginLeft="20dp"
             />
 
 
+        <!-- Dynamic Questions Layout -->
         <LinearLayout
+            android:id="@+id/questionsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-
+            android:orientation="vertical"
             android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp">
-            <EditText
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Enter Question"
-                android:textColorHint="@color/dark_gray"
-                android:padding="10dp"
-                android:textSize="16sp"
-                android:background="@drawable/edit_text_background"/>
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/baseline_delete_24"
-                android:padding="10dp"
-                android:contentDescription="Delete Requirement"
-                android:layout_gravity="end" />
-        </LinearLayout>
+            android:layout_marginRight="20dp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="20dp"
-            >
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                >
-
-                <RadioButton
-                    android:id="@+id/correctAnswerRadioButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    />
-
-                <EditText
-                    android:id="@+id/answerEditText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Enter Answer"
-                    android:textColorHint="@color/dark_gray"
-                    android:textSize="16sp"
-                    android:background="@drawable/edit_text_background" />
-
-                <ImageView
-                    android:id="@+id/deleteAnswerImageView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/baseline_delete_24"
-                    android:padding="10dp"
-                    android:contentDescription="Delete Answer"
-                    android:layout_gravity="end" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="20dp"
-            >
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                >
-
-                <RadioButton
-
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    />
-
-                <EditText
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Enter Answer"
-                    android:textColorHint="@color/dark_gray"
-                    android:textSize="16sp"
-                    android:background="@drawable/edit_text_background" />
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/baseline_delete_24"
-                    android:padding="10dp"
-                    android:contentDescription="Delete Answer"
-                    android:layout_gravity="end" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginLeft="30dp"
-
-            >
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp"
-                android:layout_marginRight="20dp"
-                >
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    />
-
-                <EditText
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Enter Answer"
-                    android:textColorHint="@color/dark_gray"
-                    android:textSize="16sp"
-                    android:background="@drawable/edit_text_background" />
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/baseline_delete_24"
-                    android:padding="10dp"
-                    android:contentDescription="Delete Answer"
-                    android:layout_gravity="end" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/questionsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
 
         <Button
             android:id="@+id/addQuestionButton"

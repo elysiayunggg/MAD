@@ -64,7 +64,10 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         }
 
         TextView moduleTitle = convertView.findViewById(R.id.moduleTitle);
-        moduleTitle.setText(groupList.get(groupPosition));
+
+        // Prepend numbering to the module title
+        String moduleName = groupList.get(groupPosition);
+        moduleTitle.setText(String.format("Module %d: %s", groupPosition + 1, moduleName));
 
         return convertView;
     }
@@ -76,15 +79,15 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = inflater.inflate(R.layout.expandable_child, null);
         }
 
-        // Get the lesson title
-        String lessonTitle = (String) getChild(groupPosition, childPosition);
+        TextView lessonTitle = convertView.findViewById(R.id.lessonTitle);
 
-        // Set the lesson title to the TextView
-        TextView lessonTextView = convertView.findViewById(R.id.lessonTitle);
-        lessonTextView.setText(lessonTitle);
+        // Prepend numbering to the lesson title
+        String lessonName = childMap.get(groupList.get(groupPosition)).get(childPosition);
+        lessonTitle.setText(String.format("Lesson %d: %s", childPosition + 1, lessonName));
 
         return convertView;
     }
+
 
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {

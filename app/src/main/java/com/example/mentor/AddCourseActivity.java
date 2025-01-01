@@ -3,9 +3,7 @@ package com.example.mentor;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -13,34 +11,32 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import com.bumptech.glide.Glide; // Add this import if you're using Glide
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class AddCourseActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
+
     private ImageView courseImageView;
-
-    private EditText titleEditText, descriptionEditText, lessonsEditText;
+    private EditText titleEditText, descriptionEditText, lessonsEditText, imageUrlInput;
     private LinearLayout modulesLayout;
-    private Button addModulesButton;
-    private Button doneButton;
-
+    private Button addModulesButton, doneButton, fetchImageButton;
     private Bitmap selectedImageBitmap;
+    private boolean isEditMode = false;
 
-    private EditText imageUrlInput;
-    private Button fetchImageButton;
-
+    // Data structures for modules and lessons
+    private List<String> groupList = new ArrayList<>();
+    private HashMap<String, List<String>> childMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +47,7 @@ public class AddCourseActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // Enable navigation (back button)
-        toolbar.setNavigationOnClickListener(v -> {
-            Intent intent = new Intent(AddCourseActivity.this, MyCourseActivity.class);
-            startActivity(intent);
-            finish(); // End AddCourseActivity
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         // Initialize views
         titleEditText = findViewById(R.id.courseTitle);
@@ -78,72 +70,22 @@ public class AddCourseActivity extends AppCompatActivity {
             }
         });
 
-        addModulesButton.setOnClickListener(v -> addModulesField());
+        addModulesButton.setOnClickListener(v -> addModulesField("")); // Dynamically add module row
 
+        // Check if activity is launched in edit mode
+        Intent intent = getIntent();
+        isEditMode = intent.getBooleanExtra("editMode", false);
 
+        if (isEditMode) {
+            // Populate fields with current course data
+            populateFields(intent);
 
-        doneButton.setOnClickListener(v -> {
-            // Collect data from fields
-            String title = titleEditText.getText().toString().trim();
-            String description = descriptionEditText.getText().toString().trim();
-            String lessonsCountStr = lessonsEditText.getText().toString().trim();
-            String imageUrl = imageUrlInput.getText().toString().trim();
+            // Update the button text and color for "Save Changes"
+            doneButton.setText("Save Changes");
+            doneButton.setBackgroundTintList(getResources().getColorStateList(R.color.green));
+        }
 
-            // Initialize a StringBuilder to hold error messages
-            StringBuilder errorMessage = new StringBuilder();
-
-            // Validate each field and add errors to the message
-            if (title.isEmpty()) {
-                errorMessage.append("- Please enter a title.\n");
-            }
-            if (description.isEmpty()) {
-                errorMessage.append("- Please enter a description.\n");
-            }
-            if (lessonsCountStr.isEmpty()) {
-                errorMessage.append("- Please enter the number of lessons.\n");
-            }
-            if (imageUrl.isEmpty()) {
-                errorMessage.append("- Please provide an image URL.\n");
-            }
-
-            // If there are errors, show the error message and stop the process
-            if (errorMessage.length() > 0) {
-                new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("Incomplete Information")
-                        .setMessage(errorMessage.toString())
-                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                        .setCancelable(false)
-                        .show();
-                return;
-            }
-
-            // If all fields are valid, proceed
-            int lessonsCount = Integer.parseInt(lessonsCountStr);
-
-            // Collect requirements (optional fields)
-            List<String> modules = new ArrayList<>();
-            for (int i = 0; i < modulesLayout.getChildCount(); i++) {
-                LinearLayout row = (LinearLayout) modulesLayout.getChildAt(i);
-                EditText requirementField = (EditText) row.getChildAt(0);
-                String module = requirementField.getText().toString().trim();
-                if (!module.isEmpty()) {
-                    modules.add(module);
-                }
-            }
-
-            // Pass data back to MyCourseActivity
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra("courseTitle", title);
-            resultIntent.putExtra("courseDescription", description);
-            resultIntent.putExtra("lessonsCount", lessonsCount);
-            resultIntent.putStringArrayListExtra("modules", new ArrayList<>(modules));
-            resultIntent.putExtra("imageUrl", imageUrl);
-
-            setResult(RESULT_OK, resultIntent);
-
-            // Show success dialog
-            showSuccessDialog();
-        });
+        doneButton.setOnClickListener(v -> saveCourseData());
     }
 
     // Load image from URL
@@ -156,7 +98,7 @@ public class AddCourseActivity extends AppCompatActivity {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                         Log.e("GlideError", "Error loading image", e);
-                        return false; // Important to return false so the error placeholder can be displayed
+                        return false;
                     }
 
                     @Override
@@ -167,107 +109,136 @@ public class AddCourseActivity extends AppCompatActivity {
                 .into(courseImageView);
     }
 
-    // Dynamically add a new requirement field (EditText) and delete icon
-    private void addModulesField() {
-        // Create a new LinearLayout row
+    // Dynamically add a new module field
+    private void addModulesField(String module) {
+        // Create a new LinearLayout row for the module
         LinearLayout moduleRow = new LinearLayout(this);
         moduleRow.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        rowParams.setMargins(0, 16, 0, 0); // Add top margin for spacing between rows
+        rowParams.setMargins(0, 16, 0, 0); // Add spacing between rows
         moduleRow.setLayoutParams(rowParams);
 
-        // Create a new EditText for the requirement
-        EditText requirementField = new EditText(this);
+        // Create an EditText for the module title
+        EditText moduleField = new EditText(this);
         LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1); // Match weight = 1
-        requirementField.setLayoutParams(editTextParams);
-        requirementField.setHint("Module");
-        requirementField.setPadding(10, 15, 10, 10); // Match padding
-        requirementField.setTextColor(getResources().getColor(R.color.light_gray)); // Match text color
-        requirementField.setBackground(getResources().getDrawable(R.drawable.edit_text_background)); // Match background
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1); // Weight = 1
+        moduleField.setLayoutParams(editTextParams);
+        moduleField.setHint("Module");
+        moduleField.setText(module); // Set the module name if provided
+        moduleField.setPadding(10, 15, 10, 10);
+        moduleField.setBackground(getResources().getDrawable(R.drawable.edit_text_background));
 
-        // Create a delete icon (ImageView) for removing the field
+        // Create the delete icon (ImageView)
         ImageView deleteIcon = new ImageView(this);
-        LinearLayout.LayoutParams deleteIconParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        deleteIconParams.setMargins(16, 0, 0, 0); // Add some spacing
-        deleteIcon.setLayoutParams(deleteIconParams);
-        deleteIcon.setImageResource(R.drawable.baseline_delete_24); // Match delete icon
+        deleteIcon.setImageResource(R.drawable.baseline_delete_24);
+        deleteIcon.setPadding(10, 10, 10, 10);
         deleteIcon.setContentDescription("Delete Module");
-        deleteIcon.setPadding(10, 10, 30, 10); // Match padding
+        deleteIcon.setOnClickListener(v -> {
+            // Confirmation dialog for deletion
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Module")
+                    .setMessage("Are you sure you want to delete this module?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // Remove the module row from the layout
+                        modulesLayout.removeView(moduleRow);
 
-        // Add click listener to delete the specific row
-        deleteIcon.setOnClickListener(v -> modulesLayout.removeView(moduleRow));
+                        // Remove the module from groupList and childMap if it exists
+                        String moduleText = moduleField.getText().toString().trim();
+                        if (!moduleText.isEmpty() && groupList.contains(moduleText)) {
+                            groupList.remove(moduleText);
+                            childMap.remove(moduleText);
+                        }
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        });
 
         // Add the EditText and delete icon to the row
-        moduleRow.addView(requirementField);
+        moduleRow.addView(moduleField);
         moduleRow.addView(deleteIcon);
 
-        // Add the new requirement row to the requirements layout
+        // Add the row to the modules layout
         modulesLayout.addView(moduleRow);
+
+        // Add the module to groupList and initialize childMap if it is valid
+        if (!module.isEmpty() && !groupList.contains(module)) {
+            groupList.add(module);
+            childMap.put(module, new ArrayList<>()); // Initialize an empty list for lessons
+        }
     }
 
-    // Attach delete listeners to existing rows in the requirements layout
-    private void attachDeleteListenersToExistingRows() {
-        for (int i = 0; i < modulesLayout.getChildCount(); i++) {
-            View row = modulesLayout.getChildAt(i);
-            if (row instanceof LinearLayout) {
-                LinearLayout rowLayout = (LinearLayout) row;
-                View deleteIcon = rowLayout.getChildAt(1); // Assuming the delete icon is the second view
-                if (deleteIcon instanceof ImageView) {
-                    deleteIcon.setOnClickListener(v -> modulesLayout.removeView(rowLayout));
+    private void populateFields(Intent intent) {
+        titleEditText.setText(intent.getStringExtra("courseTitle"));
+        descriptionEditText.setText(intent.getStringExtra("courseDescription"));
+        lessonsEditText.setText(String.valueOf(intent.getIntExtra("lessonsCount", 0)));
+        imageUrlInput.setText(intent.getStringExtra("imageUrl"));
+        loadImageFromUrl(intent.getStringExtra("imageUrl"));
+
+        ArrayList<String> modules = intent.getStringArrayListExtra("modules");
+        if (modules != null) {
+            for (String module : modules) {
+                addModulesField(module); // Add the pre-populated module rows
+                if (!childMap.containsKey(module)) {
+                    childMap.put(module, new ArrayList<>()); // Ensure childMap is initialized
                 }
             }
         }
     }
 
-    // Method triggered when ImageView is clicked
-    public void chooseImage(View view) {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.setType("image/*");
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
-    }
+    // Save or update course data
+    private void saveCourseData() {
+        String title = titleEditText.getText().toString().trim();
+        String description = descriptionEditText.getText().toString().trim();
+        String lessonsCountStr = lessonsEditText.getText().toString().trim();
+        String imageUrl = imageUrlInput.getText().toString().trim();
 
-    // Handle the result of the image picker
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri imageUri = data.getData();
-            try {
-                // Convert the selected image to a Bitmap
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                selectedImageBitmap = bitmap;
-                // Set the Bitmap to the ImageView
-                courseImageView.setImageBitmap(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
-                Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
-            }
+        // Validate inputs
+        if (title.isEmpty() || description.isEmpty() || lessonsCountStr.isEmpty() || imageUrl.isEmpty()) {
+            Toast.makeText(this, "Please fill in all fields.", Toast.LENGTH_SHORT).show();
+            return;
         }
-    }
 
-    private void showSuccessDialog() {
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Course Added")
-                .setMessage("The course has been successfully added.")
-                .setPositiveButton("OK", (dialog, which) -> {
-                    // Close the dialog and the activity
-                    dialog.dismiss();
-                    finish(); // Close AddCourseActivity and return to MyCourseActivity
-                })
-                .setCancelable(false) // Prevent dismissing the dialog by clicking outside
-                .show();
+        if (!lessonsCountStr.matches("\\d+")) {
+            Toast.makeText(this, "Please enter a valid number of lessons.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int lessonsCount = Integer.parseInt(lessonsCountStr);
+
+        // Collect module data
+        List<String> modules = new ArrayList<>();
+        for (int i = 0; i < modulesLayout.getChildCount(); i++) {
+            LinearLayout row = (LinearLayout) modulesLayout.getChildAt(i);
+            EditText moduleField = (EditText) row.getChildAt(0);
+            String module = moduleField.getText().toString().trim();
+            if (module.isEmpty()) {
+                Toast.makeText(this, "Please fill in all module fields or remove empty rows.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            modules.add(module);
+        }
+
+        // Pass data back to the previous activity
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("courseTitle", title);
+        resultIntent.putExtra("courseDescription", description);
+        resultIntent.putExtra("lessonsCount", lessonsCount);
+        resultIntent.putStringArrayListExtra("modules", new ArrayList<>(modules));
+        resultIntent.putExtra("imageUrl", imageUrl);
+
+        setResult(RESULT_OK, resultIntent);
+        finish();
     }
 
     @Override
     public void onBackPressed() {
-        // Navigate to MyCourseActivity when the back button is pressed
-        Intent intent = new Intent(AddCourseActivity.this, MyCourseActivity.class);
-        startActivity(intent);
-        finish(); // End AddCourseActivity
-        super.onBackPressed();
+        if (isEditMode) {
+            // Return to CourseInfoActivity in edit mode
+            setResult(RESULT_CANCELED);
+            finish();
+        } else {
+            super.onBackPressed();
+        }
     }
 }

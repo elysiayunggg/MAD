@@ -3,6 +3,7 @@ package com.example.mentor;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class CreateLessonActivity extends AppCompatActivity {
@@ -29,19 +31,22 @@ public class CreateLessonActivity extends AppCompatActivity {
         lessonTitleEditText = findViewById(R.id.lessonTitleEditText);
         lessonContentEditText = findViewById(R.id.lessonContentEditText);
 
+        // Set up Toolbar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Create Lesson");
+        }
+
         // Retrieve the module name from the intent
         String moduleName = getIntent().getStringExtra("moduleName");
-
-        // Check if the moduleName is not null
         if (moduleName != null) {
-            setTitle("Create Lesson for " + moduleName);
-
-            // Update the TextView with the module name
             TextView selectedModuleText = findViewById(R.id.selectedModuleText);
             selectedModuleText.setText("Module: " + moduleName);
         }
 
-        questionsContainer = findViewById(R.id.questionsContainer);
+        questionsContainer = findViewById(R.id.questionsLayout);
         Button addQuestionButton = findViewById(R.id.addQuestionButton);
 
         // Set up "Add Question" button
@@ -51,6 +56,15 @@ public class CreateLessonActivity extends AppCompatActivity {
 
         // Set up Save button with validation
         saveLessonButton.setOnClickListener(v -> saveLesson());
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void saveLesson() {
@@ -68,6 +82,12 @@ public class CreateLessonActivity extends AppCompatActivity {
             return;
         }
 
+        // Ensure at least one question is added
+        if (questionsContainer.getChildCount() == 0) {
+            Toast.makeText(this, "Please add at least one question", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Proceed with saving the lesson (e.g., return the data to the calling activity)
         Intent resultIntent = new Intent();
         resultIntent.putExtra("lessonTitle", title);
@@ -76,11 +96,7 @@ public class CreateLessonActivity extends AppCompatActivity {
         finish();
     }
 
-
-    // Method to add a new question dynamically
     private void addNewQuestion() {
-        LayoutInflater inflater = LayoutInflater.from(this);
-
         // Create Question Layout
         LinearLayout questionLayout = new LinearLayout(this);
         questionLayout.setOrientation(LinearLayout.VERTICAL);
@@ -125,10 +141,6 @@ public class CreateLessonActivity extends AppCompatActivity {
         questionsContainer.addView(questionLayout);
     }
 
-
-
-
-    // Method to add an answer option dynamically
     private void addAnswerOption(LinearLayout questionLayout) {
         // Create Answer Row
         LinearLayout answerRow = new LinearLayout(this);
@@ -180,4 +192,24 @@ public class CreateLessonActivity extends AppCompatActivity {
         questionLayout.addView(answerRow);
     }
 
+    @Override
+    public void onBackPressed() {
+        // Confirm unsaved changes before navigating back
+        if (hasUnsavedChanges()) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Discard Changes?")
+                    .setMessage("You have unsaved changes. Are you sure you want to discard them?")
+                    .setPositiveButton("Yes", (dialog, which) -> finish())
+                    .setNegativeButton("No", null)
+                    .show();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private boolean hasUnsavedChanges() {
+        return !lessonTitleEditText.getText().toString().trim().isEmpty() ||
+                !lessonContentEditText.getText().toString().trim().isEmpty() ||
+                questionsContainer.getChildCount() > 0;
+    }
 }
