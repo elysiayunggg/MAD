@@ -1,6 +1,6 @@
 package com.example.pizza;
+
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,7 +8,9 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
 import java.util.List;
+
 public class CourseDetailsExpandableListAdapter extends BaseExpandableListAdapter {
+
     private Context context;
     private List<String> groupList; // The groups (e.g., course modules)
     private List<List<String>> childList; // The children (e.g., topics within each module)
@@ -58,11 +60,11 @@ public class CourseDetailsExpandableListAdapter extends BaseExpandableListAdapte
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(android.R.layout.simple_expandable_list_item_1, null);
+            convertView = inflater.inflate(R.layout.group_item, null); // Inflate custom group layout
         }
 
-        TextView groupText = convertView.findViewById(android.R.id.text1);
-        groupText.setText(groupList.get(groupPosition)); // Set the group title
+        TextView groupTitle = convertView.findViewById(R.id.groupTitle);
+        groupTitle.setText(groupList.get(groupPosition)); // Set the group title
         return convertView;
     }
 
@@ -70,13 +72,11 @@ public class CourseDetailsExpandableListAdapter extends BaseExpandableListAdapte
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(android.R.layout.simple_list_item_1, null);
+            convertView = inflater.inflate(R.layout.child_item, null); // Inflate custom child layout
         }
 
-        TextView childText = convertView.findViewById(android.R.id.text1);
-        childText.setText(childList.get(groupPosition).get(childPosition)); // Set the child content
-        childText.setTextSize(16); // Adjust text size if necessary
-        childText.setTextColor(Color.BLACK); // Ensure the text color is visible
+        TextView childTitle = convertView.findViewById(R.id.childTitle);
+        childTitle.setText(childList.get(groupPosition).get(childPosition)); // Set the child content
         return convertView;
     }
 

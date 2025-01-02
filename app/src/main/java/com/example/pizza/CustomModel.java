@@ -10,9 +10,13 @@ public class CustomModel implements Serializable {
     int mentorProfileImage;
     List<String> modules; // List of module titles
     List<List<String>> lessons; // Nested list of lessons for each module
+    List<List<String>> lessonContents; // Nested list of lesson content for each module
+    List<QuizQuestion> quizQuestions;//new
+    String videoURL;
 
 
-    public CustomModel(int image, String title, String lesson, String rating, String about, String mentorName, String mentorJob, int mentorProfileImage, List<String> modules, List<List<String>> lessons) {
+
+    public CustomModel(int image, String title, String lesson, String rating, String about, String mentorName, String mentorJob, int mentorProfileImage, List<String> modules, List<List<String>> lessons, List<List<String>> lessonContents, List<QuizQuestion> quizQuestions, String videoURL) {
         this.image = image;
         this.title = title;
         this.lesson = lesson;
@@ -23,6 +27,29 @@ public class CustomModel implements Serializable {
         this.mentorProfileImage = mentorProfileImage;
         this.modules = modules;
         this.lessons = lessons;
+        this.lessonContents = lessonContents;
+        this.quizQuestions = quizQuestions;
+        this.videoURL = videoURL;
+    }
+
+    public List<List<String>> getLessonContents() {
+        return lessonContents;
+    }
+
+    public List<QuizQuestion> getQuizQuestions() {
+        return quizQuestions;
+    }
+
+    public void setQuizQuestions(List<QuizQuestion> quizQuestions) {
+        this.quizQuestions = quizQuestions;
+    }
+
+    public String getVideoURL() {
+        return videoURL;
+    }
+
+    public void setVideoURL(String videoURL) {
+        this.videoURL = videoURL;
     }
 
     public int getImage() {

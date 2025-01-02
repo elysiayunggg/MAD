@@ -9,5 +9,7 @@
     <color name="purple">#A26EC2</color>
     <color name="red">#FF5252</color>
     <color name="divider"></color>
+    <color name="enroll_color">#A26EC2</color> <!-- Purple -->
+    <color name="unenroll_color">#F44336</color> <!-- Red -->
 
 </resources>

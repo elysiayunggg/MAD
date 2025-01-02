@@ -23,6 +23,10 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.CustomHold
 
     CardView cardView;
 
+    public interface OnCourseSelectedListener {
+        void onCourseSelected(CustomModel selectedCourse);
+    }
+
     public CustomAdapter(Context context, ArrayList<CustomModel> customModelArrayList) {
         this.context = context;
         this.customModelArrayList = customModelArrayList;

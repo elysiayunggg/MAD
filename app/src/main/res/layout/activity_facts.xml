@@ -29,7 +29,7 @@
     <TextView
         android:id="@+id/courseTitle"
         android:text="Understanding Self-Confidence"
-        android:textSize="22sp"
+        android:textSize="30sp"
         android:textStyle="bold"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -40,17 +40,16 @@
         android:textColor="@color/white"/>
 
     <TextView
-        android:id="@+id/courseLesson"
+        android:id="@+id/lessonTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Definition of Self-Confidence"
-        android:textSize="18dp"
-        android:textStyle="italic"
         android:layout_marginLeft="10dp"
+        android:layout_marginTop="16dp"
         android:layout_marginRight="10dp"
+        android:text="Definition"
         android:textColor="@color/white"
-        />
-
+        android:textSize="20sp"
+        android:textStyle="bold" />
     <!-- Course Image (optional) -->
     <ImageView
         android:id="@+id/courseImage"
@@ -64,17 +63,8 @@
         android:layout_marginBottom="20dp"/>
 
     <!-- Lesson Content Section -->
-    <TextView
-        android:id="@+id/lessonTitle"
-        android:text="Definition"
-        android:textSize="23sp"
-        android:textStyle="bold"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textColor="@color/white"
-        android:layout_marginRight="10dp"
-        android:layout_marginLeft="10dp"/>
+
+
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"

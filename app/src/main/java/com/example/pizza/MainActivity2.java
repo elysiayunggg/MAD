@@ -1,6 +1,7 @@
 package com.example.pizza;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,29 +11,57 @@ import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class MainActivity2 extends AppCompatActivity {
 
-    ImageView courseImageView, mentorProfile;
-    TextView courseTitleTextView, courseDetailsTextView, mentorName, mentorJob;
-    ExpandableListView lessonsExpandableListView;
-    Button enrollButton;
-
+    // UI Elements
+    private ImageView courseImageView, mentorProfile;
+    private TextView courseTitleTextView, courseDetailsTextView, mentorName, mentorJob;
+    private ExpandableListView lessonsExpandableListView;
+    private Button enrollButton;
     private boolean isCourseStarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main2);
 
+        // Initialize SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("CoursePrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
         // Initialize UI elements
-        Toolbar toolbar = findViewById(R.id.toolbar1);
+        initializeUI();
+
+        // Retrieve course details passed from the previous activity
+        CustomModel courseDetails = (CustomModel) getIntent().getSerializableExtra("courseDetails");
+        String courseId = (courseDetails != null) ? courseDetails.getTitle() : "default_course";
+
+        // Retrieve saved state of course start status
+        isCourseStarted = sharedPreferences.getBoolean("isCourseStarted_" + courseId, false);
+        updateEnrollmentState(isCourseStarted, courseDetails, editor);
+
+        if (courseDetails != null) {
+            populateCourseDetails(courseDetails);
+            setupExpandableListView(courseDetails);
+        }
+
+    }
+
+    /**
+     * Initialize UI elements.
+     */
+    private void initializeUI() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
         courseImageView = findViewById(R.id.courseImageView);
         courseTitleTextView = findViewById(R.id.courseTitle);
         courseDetailsTextView = findViewById(R.id.tvAboutDetails);
@@ -42,76 +71,117 @@ public class MainActivity2 extends AppCompatActivity {
         mentorName = findViewById(R.id.mentorName);
         mentorJob = findViewById(R.id.mentorJob);
 
-        // Initialize the "About" section TextViews
-        TextView tvAbout = findViewById(R.id.tvAbout);
-        TextView tvAboutDetails = findViewById(R.id.tvAboutDetails);
-
-        // Setup Toolbar
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-        toolbar.setNavigationOnClickListener(v -> onBackPressed()); // Handle back button click
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+    }
 
-        // Retrieve course details passed from the previous activity
-        CustomModel courseDetails = (CustomModel) getIntent().getSerializableExtra("courseDetails");
-
-        if (courseDetails != null) {
-            // Set course image and details
-            courseImageView.setImageResource(courseDetails.getImage());
-            courseTitleTextView.setText(courseDetails.getTitle());
-            courseDetailsTextView.setText(courseDetails.getLesson());
-
-            // Set About section
-            tvAbout.setText("About");
-            tvAboutDetails.setText(courseDetails.getAbout()); // Display the course "About" content
-
-
-            // Set mentor details
-            mentorProfile.setImageResource(courseDetails.getMentorProfileImage());
-            mentorName.setText(courseDetails.getMentorName());
-            mentorJob.setText(courseDetails.getMentorJob());
-
-            // Populate ExpandableListView
-            CourseDetailsExpandableListAdapter adapter = new CourseDetailsExpandableListAdapter(
-                    this,
-                    courseDetails.getModules(),
-                    courseDetails.getLessons()
-            );
-            lessonsExpandableListView.setAdapter(adapter);
-            setExpandableListViewHeight(lessonsExpandableListView);
-
-            // Set click listener on mentor profile
-            mentorProfile.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity2.this, MessageMentorActivity.class);
-                intent.putExtra("mentorName", courseDetails.getMentorName()); // Pass mentor name
-                startActivity(intent);
-            });
+    /**
+     * Update enrollment state based on whether the course is started.
+     */
+    private void updateEnrollmentState(boolean isCourseStarted, CustomModel courseDetails, SharedPreferences.Editor editor) {
+        if (isCourseStarted) {
+            enrollButton.setText("Start Lesson");
+        } else {
+            enrollButton.setText("Enroll Course");
         }
 
-        // Enroll Button Functionality
         enrollButton.setOnClickListener(v -> {
             if (!isCourseStarted) {
-                // Show Snackbar message saying "Enrolled in course"
                 Snackbar.make(v, "Enrolled in course", Snackbar.LENGTH_SHORT).show();
-
-                // Change button text to "Start Lesson"
                 enrollButton.setText("Start Lesson");
-
-                // Set isCourseStarted to true to indicate that the course has been enrolled
-                isCourseStarted = true;
-                // Optionally disable the button after enrollment to prevent multiple clicks
-               // enrollButton.setEnabled(false);
-
+                editor.putBoolean("isCourseStarted_" + courseDetails.getTitle(), true);
+                addCourseToEnrolledList(editor, courseDetails.getTitle());
             } else {
-                // When "Start Lesson" is clicked, navigate to LessonActivity
-                Intent intent = new Intent(MainActivity2.this, LessonActivity.class);
-                startActivity(intent);
+                navigateToLessonActivity(courseDetails);
             }
         });
     }
 
+    /**
+     * Add course to enrolled list in SharedPreferences.
+     */
+    private void addCourseToEnrolledList(SharedPreferences.Editor editor, String courseId) {
+        Set<String> enrolledCourses = getSharedPreferences("CoursePrefs", MODE_PRIVATE)
+                .getStringSet("enrolledCourses", new HashSet<>());
+        enrolledCourses.add(courseId);
+        editor.putStringSet("enrolledCourses", enrolledCourses);
+        editor.apply();
+    }
+
+    /**
+     * Populate course details in the UI.
+     */
+    private void populateCourseDetails(CustomModel courseDetails) {
+        courseImageView.setImageResource(courseDetails.getImage());
+        courseTitleTextView.setText(courseDetails.getTitle());
+        courseDetailsTextView.setText(courseDetails.getAbout());
+        mentorProfile.setImageResource(courseDetails.getMentorProfileImage());
+        mentorName.setText(courseDetails.getMentorName());
+        mentorJob.setText(courseDetails.getMentorJob());
+
+        mentorProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity2.this, MessageMentorActivity.class);
+            intent.putExtra("mentorName", courseDetails.getMentorName());
+            startActivity(intent);
+        });
+    }
+
+    /**
+     * Set up ExpandableListView with modules and lessons.
+     */
+    private void setupExpandableListView(CustomModel courseDetails) {
+        CourseDetailsExpandableListAdapter adapter = new CourseDetailsExpandableListAdapter(
+                this,
+                courseDetails.getModules(),
+                courseDetails.getLessons()
+        );
+        lessonsExpandableListView.setAdapter(adapter);
+        setExpandableListViewHeight(lessonsExpandableListView);
+
+        lessonsExpandableListView.setOnChildClickListener((parent, view, groupPosition, childPosition, id) -> {
+            // Retrieve the selected lesson details
+            String selectedLessonTitle = courseDetails.getLessons().get(groupPosition).get(childPosition);
+            String selectedLessonContent = courseDetails.getLessonContents().get(groupPosition).get(childPosition);
+            String videoURL = courseDetails.getVideoURL(); // Retrieve the course video URL
+            List<QuizQuestion> selectedQuizQuestions = courseDetails.getQuizQuestions();
+
+            // Navigate to FactsActivity
+            Intent intent = new Intent(MainActivity2.this, FactsActivity.class);
+            intent.putExtra("courseDetails", courseDetails);
+            intent.putExtra("lessonTitle", selectedLessonTitle);
+            intent.putExtra("lessonContent", selectedLessonContent);
+            intent.putExtra("videoURL", videoURL);
+            intent.putExtra("quizQuestions", new ArrayList<>(selectedQuizQuestions));
+            startActivity(intent);
+            return true;
+        });
+    }
+
+    /**
+     * Navigate to LessonActivity with relevant details.
+     */
+    private void navigateToLessonActivity(CustomModel courseDetails) {
+        Intent intent = new Intent(MainActivity2.this, FactsActivity.class);
+        intent.putExtra("courseDetails", courseDetails);
+        startActivity(intent);
+    }
+
+    private void navigateToLessonActivity(CustomModel courseDetails, String lessonTitle, String lessonContent, List<QuizQuestion> quizQuestions) {
+        Intent intent = new Intent(MainActivity2.this, FactsActivity.class);
+        intent.putExtra("courseDetails", courseDetails);
+        intent.putExtra("lessonTitle", lessonTitle);
+        intent.putExtra("lessonContent", lessonContent); // Pass the String directly
+        intent.putExtra("quizQuestions", new ArrayList<>(quizQuestions));
+        startActivity(intent);
+    }
+
+    /**
+     * Dynamically adjust the height of the ExpandableListView.
+     */
     private void setExpandableListViewHeight(ExpandableListView listView) {
         ExpandableListAdapter adapter = listView.getExpandableListAdapter();
         if (adapter == null) return;
@@ -139,6 +209,6 @@ public class MainActivity2 extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed(); // Navigate back to the previous activity
+        super.onBackPressed();
     }
 }

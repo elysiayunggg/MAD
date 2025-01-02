@@ -27,9 +27,9 @@
 
     <!-- Quiz Title -->
     <TextView
-        android:id="@+id/quizTitle"
+        android:id="@+id/courseTitle"
         android:text="Understanding Self-Confidence"
-        android:textSize="25sp"
+        android:textSize="30sp"
         android:textStyle="bold"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,8 +38,8 @@
         android:textColor="@color/white"/>
 
     <TextView
-        android:id="@+id/quizDesc"
-        android:text="Quiz: Understanding Self-Confidence"
+        android:id="@+id/lessonTitle"
+        android:text="Test Your Understanding"
         android:textSize="20sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -65,7 +65,7 @@
             <TextView
                 android:id="@+id/quizQuestion"
                 android:text="1. What is self-confidence?"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"

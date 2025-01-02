@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@color/pink">
+    android:background="@color/pink"
+    android:theme="@style/FullScreenTheme"
+    >
 
     <!-- Back Button (Top Left) -->
     <LinearLayout
@@ -16,19 +18,19 @@
 
         <ImageButton
             android:id="@+id/backButton"
-            android:src="@drawable/baseline_arrow_back_24"
-            android:contentDescription="Back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
-            android:padding="8dp"/>
+            android:contentDescription="Back"
+            android:padding="8dp"
+            android:src="@drawable/baseline_arrow_back_24" />
     </LinearLayout>
 
     <!-- Video Title -->
     <TextView
-        android:id="@+id/videoTitle"
+        android:id="@+id/courseTitle"
         android:text="Understanding Self-Confidence"
-        android:textSize="25sp"
+        android:textSize="30sp"
         android:textStyle="bold"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
