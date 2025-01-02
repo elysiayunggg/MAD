@@ -6,6 +6,10 @@ android {
     namespace = "com.example.mentor"
     compileSdk = 34
 
+    viewBinding {
+        enable = true
+    }
+
     defaultConfig {
         applicationId = "com.example.mentor"
         minSdk = 24
@@ -43,5 +47,4 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
 }

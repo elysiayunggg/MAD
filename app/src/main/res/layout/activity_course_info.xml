@@ -133,8 +133,6 @@
                         android:layout_marginRight="8dp"
                         android:layout_marginBottom="8dp"
                         android:indicatorLeft="5dp"
-
-
                         />
 
                 </LinearLayout>

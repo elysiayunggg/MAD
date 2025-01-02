@@ -17,13 +17,16 @@
         android:theme="@style/Theme.Mentor"
         tools:targetApi="31">
         <activity
-            android:name=".CreateLessonActivity"
+            android:name=".MentorLessonDetailsActivity"
             android:exported="false" />
         <activity
-            android:name=".CourseInfoActivity"
+            android:name=".MentorCreateLessonActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MentorCourseInfoActivity"
             android:exported="false" /> <!-- Set MyCourseActivity as the launcher activity -->
         <activity
-            android:name=".MyCourseActivity"
+            android:name=".MentorMyCourseActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,7 +38,7 @@
             android:name=".MainActivity"
             android:exported="false" /> <!-- AddCourseActivity -->
         <activity
-            android:name=".AddCourseActivity"
+            android:name=".MentorAddCourseActivity"
             android:exported="false" />
     </application>
 
